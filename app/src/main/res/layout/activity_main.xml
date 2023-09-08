@@ -14,35 +14,41 @@
         android:gravity="center"
         android:layout_marginTop="16dp" />
     <TextView
+        android:id="@+id/heartRate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="8dp"
         android:layout_marginVertical="16dp" />
     <Button
+        android:id="@+id/heartRateButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="Measure Heart Rate" />
 
     <TextView
+        android:id="@+id/respRate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="8dp"
         android:layout_marginVertical="16dp"/>
 
     <Button
+        android:id="@+id/respRateButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="Measure Respiratory Rate" />
 
     <Button
+        android:id="@+id/uploadSigns"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="Upload Signs" />
 
     <Button
+        android:id="@+id/symptoms"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
