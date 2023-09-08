@@ -20,12 +20,12 @@ public class MainActivity extends AppCompatActivity {
         symptomsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openSymptomsActivity();
+                startSymptomsActivity();
             }
         });
     }
 
-    public void openSymptomsActivity(){
+    public void startSymptomsActivity(){
         Intent intent = new Intent(this, SymptomsActivity.class);
         startActivity(intent);
     }
