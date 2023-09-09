@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Button respRateButton = findViewById(R.id.respRateButton);
         respRateView = findViewById(R.id.respRateView);
 
+        Button symptomsButton = findViewById(R.id.symptomsButton);
+
 
         heartRateButton.setOnClickListener(view -> {
             startVideoRecording();
@@ -62,6 +65,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         respRateButton.setOnClickListener(view -> {
             measureRespRate();
+        });
+
+        symptomsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent symptomIntent = new Intent(MainActivity.this, SymptomsActivity.class);
+                startActivity(symptomIntent);
+            }
         });
 
 

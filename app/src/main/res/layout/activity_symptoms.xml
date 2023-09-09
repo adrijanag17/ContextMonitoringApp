@@ -28,13 +28,13 @@
         android:numStars="5"
         android:stepSize="1"
         android:rating="0"
-        android:isIndicator="true"
+        android:isIndicator="false"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="48dp"/>
 
 
     <Button
-        android:id="@+id/uploadSymptoms"
+        android:id="@+id/uploadSymptomsButton"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
