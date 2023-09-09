@@ -1,23 +1,22 @@
 package com.example.project1;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.TestLooperManager;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,11 +24,20 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
+
+
+    private SensorManager sensorManager;
+    private Sensor accelerometerSensor;
+    private long startTime, endTime;
+
+    ArrayList<Double> accelValuesX = new ArrayList<>();
+    ArrayList<Double> accelValuesY = new ArrayList<>();
+    ArrayList<Double> accelValuesZ = new ArrayList<>();
+
 
     private static final int REQUEST_VIDEO_CAPTURE = 1;
     Uri videoUri;
@@ -47,8 +55,13 @@ public class MainActivity extends AppCompatActivity {
         Button respRateButton = findViewById(R.id.respRateButton);
         respRateView = findViewById(R.id.respRateView);
 
+
         heartRateButton.setOnClickListener(view -> {
             startVideoRecording();
+        });
+
+        respRateButton.setOnClickListener(view -> {
+            measureRespRate();
         });
 
 
@@ -74,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
-            // Video recording completed
             videoUri = data.getData();
 
             String videoPath = convertMediaUriToPath(videoUri);
@@ -189,10 +201,86 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void measureRespRate(){
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager == null) {
+            Toast.makeText(this, "Sensor service not detected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        if (accelerometerSensor == null){
+            Toast.makeText(this, "Accelerometer not detected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        startTime = System.currentTimeMillis();
+        endTime = startTime +  45000;        // should be 45000
+
+        sensorManager.registerListener(this, accelerometerSensor, sensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            String display = "X: " + sensorEvent.values[0] + ", Y: " +
+                    sensorEvent.values[1] + ", Z: " + sensorEvent.values[2];
+            respRateView.setText(display);
+
+            accelValuesX.add((double)sensorEvent.values[0]);
+            accelValuesY.add((double)sensorEvent.values[1]);
+            accelValuesZ.add((double)sensorEvent.values[2]);
+
+
+            if (System.currentTimeMillis() > endTime) {
+                sensorManager.unregisterListener(this);
+
+                int resp = callRespiratoryCalculator();
+                respRateView.setText(String.valueOf(resp));
+
+            }
+        }
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+
+
+    private int callRespiratoryCalculator() {
+        float previousValue = 0f;
+        float currentValue = 0f;
+        previousValue = 10f;
+        int k = 0;
+
+        int n = accelValuesZ.size();
+
+        for (int i = 11; i < n; i++) {
+            currentValue = (float) Math.sqrt(
+                    Math.pow(accelValuesZ.get(i), 2.0) + Math.pow(accelValuesX.get(i), 2.0) + Math.pow(accelValuesY.get(i), 2.0)
+            );
+
+            if (Math.abs(previousValue - currentValue) > 0.15) {
+                k++;
+            }
+
+            previousValue = currentValue;
+        }
+
+        double ret = k / 45.00;     // should be 45
+
+        return (int) (ret * 30);
+    }
+
+
 
     public void startSymptomsActivity(){
         Intent intent = new Intent(this, SymptomsActivity.class);
         startActivity(intent);
     }
+
+
 }
 
