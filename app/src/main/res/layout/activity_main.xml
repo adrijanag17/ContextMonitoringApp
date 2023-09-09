@@ -14,7 +14,7 @@
         android:gravity="center"
         android:layout_marginTop="16dp" />
     <TextView
-        android:id="@+id/heartRate"
+        android:id="@+id/heartRateView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="8dp"
@@ -28,7 +28,7 @@
         android:onClick="startCameraPreview"/>
 
     <TextView
-        android:id="@+id/respRate"
+        android:id="@+id/respRateView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="8dp"
@@ -39,7 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Measure Respiratory Rate" />
+        android:text="Measure Respiratory Rate"
+        android:onClick="measureRespRate"/>
 
     <Button
         android:id="@+id/uploadSigns"
@@ -49,7 +50,7 @@
         android:text="Upload Signs" />
 
     <Button
-        android:id="@+id/symptoms"
+        android:id="@+id/symptomsButton"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"

@@ -14,33 +14,43 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.TestLooperManager;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_VIDEO_CAPTURE = 101;
+    private static final int REQUEST_VIDEO_CAPTURE = 1;
     Uri videoUri;
-    String videoPath;
-
+    TextView heartRateView;
+    TextView respRateView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button startRecordingButton = findViewById(R.id.heartRateButton);
-        Button respRateButton = findViewById(R.id.respRateButton);
+        Button heartRateButton = findViewById(R.id.heartRateButton);
+        heartRateView = findViewById(R.id.heartRateView);
 
-        startRecordingButton.setOnClickListener(view -> {
+        Button respRateButton = findViewById(R.id.respRateButton);
+        respRateView = findViewById(R.id.respRateView);
+
+        heartRateButton.setOnClickListener(view -> {
             startVideoRecording();
         });
+
 
 
     }
@@ -51,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         videoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
         videoIntent.putExtra("android.intent.extra.USE_FRONT_CAMERA", false);
-        videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5);
+        videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 45);
         videoIntent.putExtra("android.intent.extra.flash_mode", "torch");
 
 
@@ -67,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
             // Video recording completed
             videoUri = data.getData();
 
-//            filePath = convertMediaUriToPath(videoUri);
+            String videoPath = convertMediaUriToPath(videoUri);
+            calcHeartRate(videoPath);
 
         }
 
@@ -88,31 +99,41 @@ public class MainActivity extends AppCompatActivity {
         return path;
     }
 
+    public void calcHeartRate(String videoPath) {
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+                String heartRate = heartHelper(videoPath);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (heartRate != null){
+                            heartRateView.setText(heartRate);
 
-    public void startSymptomsActivity(){
-        Intent intent = new Intent(this, SymptomsActivity.class);
-        startActivity(intent);
+                        }
+                    }
+                });
+            }
+        });
     }
-}
 
-class SlowTask extends AsyncTask<String, String, String> {
-
-    @RequiresApi(api = Build.VERSION_CODES.P)
-    @Override
-    protected String doInBackground(String... params) {
-        String videoFilePath = params[0]; // Get the video file path from the parameters
+    public String heartHelper(String videoPath){
         Bitmap m_bitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         List<Bitmap> frameList = new ArrayList<>();
 
         try {
-            retriever.setDataSource(params[0]);
+            retriever.setDataSource(videoPath);
             String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_FRAME_COUNT);
             int intDuration = Integer.parseInt(duration);
             int i = 10;
 
             while (i < intDuration) {
-                Bitmap bitmap = retriever.getFrameAtIndex(i);
+                Bitmap bitmap = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    bitmap = retriever.getFrameAtIndex(i);
+                }
                 frameList.add(bitmap);
                 i += 5;
             }
@@ -163,10 +184,15 @@ class SlowTask extends AsyncTask<String, String, String> {
             }
 
             int rate = (int) ((count * 1.0f / 45) * 60);
-
             return String.valueOf(rate / 2);
         }
+
+    }
+
+
+    public void startSymptomsActivity(){
+        Intent intent = new Intent(this, SymptomsActivity.class);
+        startActivity(intent);
     }
 }
-
 
