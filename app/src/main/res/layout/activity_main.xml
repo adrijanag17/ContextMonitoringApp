@@ -43,7 +43,7 @@
         android:onClick="measureRespRate"/>
 
     <Button
-        android:id="@+id/uploadSigns"
+        android:id="@+id/uploadSignsButton"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"

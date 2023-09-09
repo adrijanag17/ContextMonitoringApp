@@ -19,10 +19,16 @@ public class SymptomsActivity extends AppCompatActivity {
     Button uploadSymptomsButton;
 
     int[] symptomRatings = new int[10];
+    long entryId;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_symptoms);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            entryId = intent.getLongExtra("entryId", -1);
+        }
 
         symptomSpinner = findViewById(R.id.symptomSpinner);
         symptomRatingBar = findViewById(R.id.symptomRating);
@@ -62,12 +68,14 @@ public class SymptomsActivity extends AppCompatActivity {
         uploadSymptomsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                for (int i : symptomRatings){
-//                    System.out.println(i);
-//                }
+                uploadSymptoms();
             }
         });
-
-
     }
+
+    public void uploadSymptoms() {
+        DBHelper dbHelper = new DBHelper(this);
+        dbHelper.addSymptoms(symptomRatings, entryId);
+    }
+
 }

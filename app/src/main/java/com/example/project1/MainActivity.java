@@ -34,16 +34,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private long startTime, endTime;
-
     ArrayList<Double> accelValuesX = new ArrayList<>();
     ArrayList<Double> accelValuesY = new ArrayList<>();
     ArrayList<Double> accelValuesZ = new ArrayList<>();
-
-
     private static final int REQUEST_VIDEO_CAPTURE = 1;
     Uri videoUri;
     TextView heartRateView;
     TextView respRateView;
+
+    String heart, resp;
+    long entryId;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         respRateView = findViewById(R.id.respRateView);
 
         Button symptomsButton = findViewById(R.id.symptomsButton);
+        Button uploadSignsButton = findViewById(R.id.uploadSignsButton);
 
 
         heartRateButton.setOnClickListener(view -> {
@@ -71,7 +76,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View v) {
                 Intent symptomIntent = new Intent(MainActivity.this, SymptomsActivity.class);
+                symptomIntent.putExtra("entryId", entryId);
                 startActivity(symptomIntent);
+            }
+        });
+
+
+        uploadSignsButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                uploadSigns();
             }
         });
 
@@ -85,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         videoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
         videoIntent.putExtra("android.intent.extra.USE_FRONT_CAMERA", false);
-        videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 45);
+        videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 45);          // 45
         videoIntent.putExtra("android.intent.extra.flash_mode", "torch");
 
 
@@ -206,8 +220,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 x = b.get(i);
             }
 
-            int rate = (int) ((count * 1.0f / 45) * 60);
-            return String.valueOf(rate / 2);
+            int rate = (int) ((count * 1.0f / 45) * 60);         // 45
+            heart = String.valueOf(rate / 2);
+            return heart;
         }
 
     }
@@ -225,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
         startTime = System.currentTimeMillis();
-        endTime = startTime +  45000;        // should be 45000
+        endTime = startTime +  45000;        // 45000
 
         sensorManager.registerListener(this, accelerometerSensor, sensorManager.SENSOR_DELAY_NORMAL);
     }
@@ -245,8 +260,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (System.currentTimeMillis() > endTime) {
                 sensorManager.unregisterListener(this);
 
-                int resp = callRespiratoryCalculator();
-                respRateView.setText(String.valueOf(resp));
+                resp = String.valueOf(callRespiratoryCalculator());
+                respRateView.setText(resp);
 
             }
         }
@@ -280,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             previousValue = currentValue;
         }
 
-        double ret = k / 45.00;     // should be 45
+        double ret = k / 45.00;      // 45.00
 
         return (int) (ret * 30);
     }
@@ -290,6 +305,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void startSymptomsActivity(){
         Intent intent = new Intent(this, SymptomsActivity.class);
         startActivity(intent);
+    }
+
+
+    public void uploadSigns(){
+
+        DBHelper dbHelper = new DBHelper(this);
+        entryId = dbHelper.addHeartResp(heart, resp);
+
     }
 
 
