@@ -22,11 +22,12 @@
         android:spinnerMode="dropdown"
         android:layout_marginTop="48dp" />
     <RatingBar
-        android:id="@+id/rating"
+        android:id="@+id/symptomRating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numStars="5"
-        android:stepSize="0.1"
+        android:stepSize="1"
+        android:rating="0"
         android:isIndicator="true"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="48dp"/>
